@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js Chat Application</title>
+    <style>
+        #chatBox { display: none; }
+        #fruitPrompt { display: block; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Chat</h1>
+    
+    <div id="fruitPrompt">
+        <p>What is your favourite fruit?</p>
+        <input type="text" id="fruitInput" placeholder="">
+        <button onclick="validateFruit()">Submit</button>
+    </div>
+    
+    <div id="chatBox">
+        <h2>Chat Room</h2>
+        <div id="chatMessages"></div>
+        <input type="text" id="messageInput" placeholder="Type a message" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const fruitInput = document.getElementById('fruitInput');
+        const chatBox = document.getElementById('chatBox');
+        const fruitPrompt = document.getElementById('fruitPrompt');
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+
+        let userValid = false;
+
+        // Handle previous messages
+        socket.on('previousMessages', (messages) => {
+            messages.forEach(message => {
+                const div = document.createElement('div');
+                div.innerHTML = `<strong>${message.user}</strong> (${message.timestamp}): ${message.message}`;
+                chatMessages.appendChild(div);
+            });
+        });
+
+        // Prompt user to enter fruit again
+        socket.on('fruitPrompt', () => {
+            fruitPrompt.style.display = 'block';
+            chatBox.style.display = 'none';
+        });
+
+        // Handle chat message display
+        socket.on('chatMessage', (message) => {
+            const div = document.createElement('div');
+            div.innerHTML = `<strong>${message.user}</strong> (${message.timestamp}): ${message.message}`;
+            chatMessages.appendChild(div);
+        });
+
+        // Validate fruit input and update user status
+        function validateFruit() {
+            const fruit = fruitInput.value;
+
+            // Make a POST request to validate the fruit input
+            fetch('/validateFruit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    fruit: fruit,
+                    socketId: socket.id
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.message === 'Valid user: userX' || data.message === 'Valid user: userY') {
+                    userValid = true;
+                    fruitPrompt.style.display = 'none';
+                    chatBox.style.display = 'block';
+                } else {
+                    alert('Invalid user');
+                    fruitPrompt.style.display = 'none';
+                    chatBox.style.display = 'none';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Send a chat message
+        function sendMessage() {
+            const message = messageInput.value;
+            socket.emit('chatMessage', message);
+            messageInput.value = '';
+        }
+
+        // Periodically prompt user for fruit input every 10 seconds
+        setInterval(() => {
+            if (1) {
+                socket.emit('fruitPrompt');
+                fruitPrompt.style.display = 'block';
+                chatBox.style.display = 'none';
+                fruitInput.value = '';
+            }
+        }, 30000);  // Every 30 seconds
+    </script>
+</body>
+</html>
