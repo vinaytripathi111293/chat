@@ -3,14 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Node.js Chat Application</title>
+    <title>Node.js Application</title>
     <style>
         #chatBox { display: none; }
         #fruitPrompt { display: block; }
+        .userX {
+            color: blue;
+            font-weight: bold;
+        }
+        .userY {
+            color: green;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
-    <h1>Welcome to the Chat</h1>
     
     <div id="fruitPrompt">
         <p>What is your favourite fruit?</p>
@@ -40,7 +47,7 @@
         socket.on('previousMessages', (messages) => {
             messages.forEach(message => {
                 const div = document.createElement('div');
-                div.innerHTML = `<strong>${message.user}</strong> (${message.timestamp}): ${message.message}`;
+                div.innerHTML = `<strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
                 chatMessages.appendChild(div);
             });
         });
@@ -54,7 +61,7 @@
         // Handle chat message display
         socket.on('chatMessage', (message) => {
             const div = document.createElement('div');
-            div.innerHTML = `<strong>${message.user}</strong> (${message.timestamp}): ${message.message}`;
+            div.innerHTML = `<strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
             chatMessages.appendChild(div);
         });
 
