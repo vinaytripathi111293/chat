@@ -15,6 +15,9 @@
             color: green;
             font-weight: bold;
         }
+        .message {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -26,10 +29,13 @@
     </div>
     
     <div id="chatBox">
-        <h2>Chat Room</h2>
         <div id="chatMessages"></div>
         <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off" />
         <button onclick="sendMessage()">Send</button>
+
+        <br><br>
+        <button onclick="selectAllMessages()">Select All</button>
+        <button onclick="deleteSelectedMessages()">Delete Selected</button>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -40,14 +46,15 @@
         const fruitPrompt = document.getElementById('fruitPrompt');
         const chatMessages = document.getElementById('chatMessages');
         const messageInput = document.getElementById('messageInput');
-
         let userValid = false;
 
         // Handle previous messages
         socket.on('previousMessages', (messages) => {
             messages.forEach(message => {
                 const div = document.createElement('div');
-                div.innerHTML = `<strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
+                div.classList.add('message');
+                div.innerHTML = `<input type="checkbox" class="messageCheckbox" data-id="${message.id}">
+                                 <strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
                 chatMessages.appendChild(div);
             });
         });
@@ -61,7 +68,9 @@
         // Handle chat message display
         socket.on('chatMessage', (message) => {
             const div = document.createElement('div');
-            div.innerHTML = `<strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
+            div.classList.add('message');
+            div.innerHTML = `<input type="checkbox" class="messageCheckbox" data-id="${message.id}">
+                             <strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
             chatMessages.appendChild(div);
         });
 
@@ -87,7 +96,6 @@
                     fruitPrompt.style.display = 'none';
                     chatBox.style.display = 'block';
                 } else {
-                    alert('Invalid user');
                     fruitPrompt.style.display = 'none';
                     chatBox.style.display = 'none';
                 }
@@ -104,6 +112,26 @@
             messageInput.value = '';
         }
 
+        // Select all messages
+        function selectAllMessages() {
+            const checkboxes = document.querySelectorAll('.messageCheckbox');
+            checkboxes.forEach(checkbox => checkbox.checked = true);
+        }
+
+        // Delete selected messages
+        function deleteSelectedMessages() {
+            const selectedMessages = [];
+            const checkboxes = document.querySelectorAll('.messageCheckbox:checked');
+            checkboxes.forEach(checkbox => selectedMessages.push(checkbox.getAttribute('data-id')));
+
+            if (selectedMessages.length > 0) {
+                // Emit an event to the server to delete messages
+                socket.emit('deleteMessages', selectedMessages);
+            } else {
+                alert('No messages selected');
+            }
+        }
+
         // Periodically prompt user for fruit input every 10 seconds
         setInterval(() => {
             if (1) {
@@ -113,6 +141,7 @@
                 fruitInput.value = '';
             }
         }, 30000);  // Every 30 seconds
+
     </script>
 </body>
 </html>
