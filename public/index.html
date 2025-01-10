@@ -5,18 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Node.js Application</title>
     <style>
-        #chatBox { display: none; }
-        #fruitPrompt { display: block; }
-        .userX {
-            color: blue;
-            font-weight: bold;
-        }
-        .userY {
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: black;
             color: green;
+            margin: 0;
+            padding: 0;
+        }
+
+        #chatBox { 
+            display: none; 
+            padding: 20px;
+            border-top: 2px solid green;
+            height: 90vh;
+            overflow-y: auto;
+        }
+
+        #fruitPrompt { 
+            display: block; 
+            padding: 20px; 
+            height: 90vh; 
+        }
+
+        .message {
+            margin: 10px 0;
+        }
+
+        .userX, .userY {
             font-weight: bold;
         }
-        .message {
-            margin: 5px 0;
+
+        input[type="text"], input[type="password"] {
+            background-color: black;
+            color: green;
+            border: none;
+            outline: none;
+            padding: 10px;
+            width: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+        }
+
+        button {
+            background-color: black;
+            color: green;
+            border: none;
+            padding: 5px 10px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #333;
+        }
+
+        .messageCheckbox {
+            margin-right: 10px;
+        }
+
+        .inputContainer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        #chatMessages {
+            padding: 0;
+            margin: 0;
+            list-style-type: none;
+            white-space: pre-wrap; /* allows the text to wrap properly */
+        }
+
+        #fruitInput {
+            margin-bottom: 10px;
+        }
+
+        #fruitPrompt p {
+            margin-bottom: 15px;
+        }
+
+        .inputContainer button {
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -24,18 +93,20 @@
     
     <div id="fruitPrompt">
         <p>What is your favourite fruit?</p>
-        <input type="text" id="fruitInput" placeholder="" autocomplete="off">
+        <input type="password" id="fruitInput" placeholder="Enter fruit name" autocomplete="off">
         <button onclick="validateFruit()">Submit</button>
     </div>
     
     <div id="chatBox">
         <div id="chatMessages"></div>
-        <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off" />
-        <button onclick="sendMessage()">Send</button>
-
-        <br><br>
-        <button onclick="selectAllMessages()">Select All</button>
-        <button onclick="deleteSelectedMessages()">Delete Selected</button>
+        <div class="inputContainer">
+            <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off" />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+        <div class="inputContainer">
+            <button onclick="selectAllMessages()">Select All</button>
+            <button onclick="deleteSelectedMessages()">Delete Selected</button>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -70,7 +141,7 @@
             const div = document.createElement('div');
             div.classList.add('message');
             div.innerHTML = `<input type="checkbox" class="messageCheckbox" data-id="${message.id}">
-                             <strong class="${message.user}">${message.user}</strong> (${message.timestamp}): ${message.message}`;
+                            <strong class="${message.user}">${message.user}:${message.active}</strong> (${message.timestamp}): ${message.message}`;
             chatMessages.appendChild(div);
         });
 
