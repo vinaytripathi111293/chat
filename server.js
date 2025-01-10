@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
         if (users[socket.id]?.isValid === true) {
             const timestamp = new Date().toLocaleString();
             const user = users[socket.id].user;
-            const message = {id: Math.floor(Math.random() * 100000000), user, timestamp, message: msg };
+            const message = {active: (Object.keys(users).length == 2) ? "Online" : "", id: Math.floor(Math.random() * 100000000), user, timestamp, message: msg };
 
             // Send message to all users in the chat
             io.emit('chatMessage', message);
