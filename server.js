@@ -23,7 +23,7 @@ app.post('/validateFruit', express.json(), (req, res) => {
     if (fruit === 'xxxx') {
         users[socketId] = { user: 'userX', isValid: true };
         res.status(200).send({ message: 'Valid user: userX' });
-    } else if (fruit === 'yyyy') {
+    } else if (fruit === 'kam30bal') {
         users[socketId] = { user: 'userY', isValid: true };
         res.status(200).send({ message: 'Valid user: userY' });
     } else {
@@ -39,19 +39,12 @@ io.on('connection', (socket) => {
     // Send previous messages for valid users
     socket.emit('previousMessages', messages);
 
-    // Periodically ask for fruit input
-    setInterval(() => {
-        if (users[socket.id]?.isValid === false) {
-            socket.emit('fruitPrompt');
-        }
-    }, 10000);
-
     // Handle chat message
     socket.on('chatMessage', (msg) => {
         if (users[socket.id]?.isValid === true) {
             const timestamp = new Date().toLocaleString();
             const user = users[socket.id].user;
-            const message = { user, timestamp, message: msg };
+            const message = {id: Math.floor(Math.random() * 100000000), user, timestamp, message: msg };
 
             // Send message to all users in the chat
             io.emit('chatMessage', message);
@@ -62,6 +55,15 @@ io.on('connection', (socket) => {
             const message = { user: 'userException', timestamp: new Date().toLocaleString(), message: msg };
             socket.emit('chatMessage', message);
         }
+    });
+
+    // Handle delete messages request
+    socket.on('deleteMessages', (messageIds) => {
+        // Filter out messages that are deleted
+        messages = messages.filter(message => !messageIds.includes(message.id.toString()));
+
+        // Broadcast the updated message list
+        io.emit('previousMessages', messages);
     });
 
     // Disconnect event
